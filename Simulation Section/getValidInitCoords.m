@@ -1,6 +1,6 @@
 function getValidInitCoords()
     shapeFiles = ["shape_meshes/CubeS.stl"]; %,"CubeM.stl","CubeB.stl","CylinderS.stl","CylinderM.stl","CylinderB.stl"];
-    objSurfAreas = [147.852005]; %, 200.401337, 260.403015, 16694.800781, 23090.662109, 30490.078125];
+    objSurfAreas = [147.852005, 200.401337, 260.403015, 16694.800781, 23090.662109, 30490.078125];
     %poissonFiles = ["CubeS.stl","CubeM.stl","CubeB.stl","CylinderS.stl","CylinderM.stl","CylinderB.stl"];
     
     % Resolution determined from previous study - shpaes made with
