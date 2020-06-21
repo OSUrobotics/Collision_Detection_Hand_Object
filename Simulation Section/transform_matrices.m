@@ -184,10 +184,16 @@ function append_to_list(currStruct)
     disp("POS List is:");
     disp(pos_list);
     
-    names_list = [names_list, string(currStruct.Attributes.name)];
+    disp("BEFORE names_list: ");
+    disp(names_list);
+    name = string(currStruct.Attributes.name);
+    names_list = [names_list, name];
+    disp("AFTER names_list: ");
+    disp(names_list);
     
     disp("NAMES List is:");
     name_num = size(names_list);
+    name_num = name_num(2);
     for i = 1:name_num
         disp(names_list(i));
     end
