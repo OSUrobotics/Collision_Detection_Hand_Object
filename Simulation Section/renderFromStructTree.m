@@ -286,6 +286,7 @@ function [partVerts, partFaces] = partTransform(currStruct, meshStruct)
         % Return correct mesh filename
         meshFile = getMesh(currPart,meshStruct,numMeshes,shapesFile,handFile);
 
+        %disp("**************************************************************");
         % Read mesh from stl file
         [objVerts, objFaces, objNormals, objName] = stlRead(meshFile);
 
