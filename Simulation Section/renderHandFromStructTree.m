@@ -7,6 +7,7 @@ function renderFromStructTree()
     global matrices_int;
     matrices_list = [];
     matrices_int = 1;
+    global meshStruct;
     
     % Given Mujoco XML file, return struct of major components
     filename = "j2s7s300_end_effector_v1_sbox.xml";
@@ -132,12 +133,56 @@ function partTransform(currStruct, meshStruct)
     %patch('Faces',partFaces,'Vertices',partVerts,'FaceColor','red');
 end
 
+% ACTUAL Return correct mesh filename from mesh struct
+function [meshFile] = getMesh(currPart,meshStruct)
+    shapesFile = "shape_meshes/";
+    handFile = "hand_meshes/";
+    numMeshes = size(meshStruct);
+    numMeshes = numMeshes(2);
+    meshFile="";
+    
+    % Object - if type = mesh, euler, if type = geom, pos, euler
+    if strcmp(currPart.Attributes.type,"mesh") == 1
+        objMeshName = currPart.Attributes.mesh;
+        for i = 1:numMeshes
+            meshName = meshStruct{i}.Attributes.name;
+            meshDir = handFile;
+            if strcmp(objMeshName,meshName) == 1
+                if strcmp(currPart.Attributes.name,"object") == 1
+                    meshDir = shapesFile;
+                else
+                    meshDir = handFile;
+                end
+                meshFile = meshDir + meshStruct{i}.Attributes.file;
+            end
+        end
+    end
+    if strcmp(currPart.Attributes.type,"cylinder") == 1
+       cylinder_file = "cylinder.stl";
+        % Get correctly-sized cylinder
+        if isfield(currPart.Attributes,'size') == 1
+            cyl_size = currPart.Attributes.size;
+            cyl_size = strsplit(cyl_size);
+            cyl_size = str2double(cyl_size);
+            cyl_size = cyl_size(1);
+
+            if cyl_size == 0.002
+                cylinder_file = "cylinder_002.stl";
+            elseif cyl_size == 0.005
+                cylinder_file = "cylinder_005.stl";
+            end
+        end
+       meshFile = handFile + cylinder_file;
+    end
+end
+
 function append_to_list(currStruct)
     global euler_list;
     global quat_list;
     global pos_list;
     global matrices_int;    
     global names_list;
+    global meshStruct;
     
     bodyEulM = [1 1 1];
     bodyQuatM = [1 1 1 1];
@@ -188,7 +233,7 @@ function append_to_list(currStruct)
     disp(names_list);
     name = string(currStruct.Attributes.name);
     if strcmp(name,"cylinder") == 1
-        if isfield(currPart.Attributes,'size') == 1
+        if isfield(currStruct.Attributes,'size') == 1
             cyl_size = currPart.Attributes.size;
             cyl_size = strsplit(cyl_size);
             cyl_size = str2double(cyl_size);
@@ -200,7 +245,22 @@ function append_to_list(currStruct)
             end
         end
     end
-    names_list = [names_list, name];
+    
+    if isfield(currStruct.Attributes,'type') == 1
+        meshFile = getMesh(currStruct,meshStruct);
+    else
+        meshFile = "no_file";
+    end
+    
+    name_entry = [name, meshFile];
+    disp("***name: ");
+    disp(name);
+    disp("meshFile: ");
+    disp(meshFile);
+    
+    names_list = [names_list,name_entry];
+    
+    %names_list = [names_list, name];
     disp("AFTER names_list: ");
     disp(names_list);
     
@@ -212,77 +272,106 @@ function append_to_list(currStruct)
     end
 end
 
-% Return correct mesh filename from mesh name
-function [meshFile] = getMesh(partMeshName,meshStruct)
-    shapesFile = "shape_meshes/";
-    handFile = "hand_meshes/";
-    numMeshes = size(meshStruct);
-    numMeshes = numMeshes(2);
+function finger_distal_transform(euler_list,quat_list,pos_list,names_list,palm_eulerM,palm_quatM,palm_posM,prox_idx,distal_idx,meshStruct)
     
-    % Object - if type = mesh, euler, if type = geom, pos, euler
-    if strcmp(partMeshName,"cylinder") == 0
-        for i = 1:numMeshes
-            meshName = meshStruct{i}.Attributes.name;
-            meshDir = handFile;
-            if strcmp(partMeshName,meshName) == 1
-                if strcmp(currPart.Attributes.name,"object") == 1
-                    meshDir = shapesFile;
-                else
-                    meshDir = handFile;
-                end
-                meshFile = meshDir + meshStruct{i}.Attributes.file;
-            end
-        end
-    end
-    if strcmp(partMeshName,"cylinder_002") == 1
-       cylinder_file = "cylinder_002.stl";
-        % Get correctly-sized cylinder
-       meshFile = handFile + cylinder_file;
-    end
-    if strcmp(partMeshName,"cylinder_005") == 1
-       cylinder_file = "cylinder_005.stl";
-        % Get correctly-sized cylinder
-       meshFile = handFile + cylinder_file;
-    end
-end
-
-function finger_distal_transform(euler_list,quat_list,pos_list,palm_eulerM,palm_quatM,palm_posM,prox_idx,distal_idx,meshStruct)
-    
-    %body_idx, geom_idx, site1, site2
-    dist_indexes = [distal_idx,distal_idx+1,distal_idx+2,distal_idx+3];
+   %body_idx, geom_idx, site1, site2
+   dist_indexes = [distal_idx+1,distal_idx+2,distal_idx+3];
       
-   prox_euler = euler_list(prox_idx);
+   % Proximal body transform
+   prox_euler = euler_list(prox_idx,:);
    prox_eulerM = eul2rotm(prox_euler,'XYZ');
+   prox_eulerM(end+1,4) = 1;
 
-   prox_quat = quat_list(prox_idx);
+   prox_quat = quat_list(prox_idx,:);
    prox_quatM = quat2rotm(prox_quat);
+   prox_quatM(end+1,4) = 1;
 
-   prox_pos = pos_list(i);
+   prox_pos = pos_list(prox_idx,:);
    prox_posM = makehgtform('translate',prox_pos); 
+   
+   % Distal body transform
+   dist_euler = euler_list(distal_idx,:);
+   dist_eulerM = eul2rotm(dist_euler,'XYZ');
+   dist_eulerM(end+1,4) = 1;
+
+   dist_quat = quat_list(distal_idx,:);
+   dist_quatM = quat2rotm(dist_quat);
+   dist_quatM(end+1,4) = 1;
+
+   dist_pos = pos_list(distal_idx,:);
+   dist_posM = makehgtform('translate',dist_pos); 
     
+   % Number of distal parts to transform
    dist_size = size(dist_indexes);
    dist_size = dist_size(2);
    
     for j=1:dist_size        
        i=dist_indexes(j);
        
-       meshFile = getMesh(partMeshName,meshStruct);
+       disp("i: ");
+       disp(i);
+       meshName = names_list(i);
+       meshName = string(meshName);
+       
+       disp("transform func MESH NAME:");
+       disp(meshName);
+       
+       meshFile = names_list(i+1);
+       
+       disp("MESH FILE before stlRead");
+       disp(meshFile);
+       
+       %if strcmp("no_file",meshFile) == 1
        % Read mesh from stl file
        [objVerts, objFaces, objNormals, objName] = stlRead(meshFile);
        
-       idv_euler = euler_list(i);
+       idv_euler = euler_list(i,:);
        eulM = eul2rotm(idv_euler,'XYZ');
+       eulM(end+1,4) = 1;
        
-       idv_quat = quat_list(i);
-       quatM = quat2rotm(quatM);
+       idv_quat = quat_list(i,:);
+       quatM = quat2rotm(idv_quat);
+       quatM(end+1,4) = 1;
        
-       idv_pos = pos_list(i);
+       idv_pos = pos_list(i,:);
        posM = makehgtform('translate',idv_pos);    
-        
-       newVerts = palm_posM*palm_eulerM*palm_quatM*prox_posM*prox_eulerM*prox_quatM*posM*quatM*eulM*objVerts;
        
+        disp("size quatM: ");
+        disp(size(quatM));
+        disp("size verts: ");
+        disp(size(objVerts));
+        
+        vert_num = size(objVerts);
+        vert_num = vert_num(1);
+        disp("vert_num: ");
+        disp(vert_num);
+        
+        % We want: objVerts*quatM*eulM*posM*dist_quatM*dist_eulerM*dist_posM*prox_quatM*prox_eulerM*prox_posM*palm_quatM*palm_eulerM*palm_posM;
+        transforms = {quatM,eulM,posM,dist_quatM,dist_eulerM,dist_posM,prox_quatM,prox_eulerM,prox_posM,palm_quatM,palm_eulerM,palm_posM};
+        trans_num = size(transforms);
+        trans_num = trans_num(2);
+        newVerts = objVerts;
+        newVerts(:,4)= 1;
+        %for k=1:vert_num
+        for g=1:trans_num
+            M = transforms{g};
+            disp("M: ");
+            disp(M);
+            disp("posM");
+            disp(posM);
+            disp(idv_pos);
+            newVerts = newVerts*M;
+        end
+        newVerts = newVerts(:, 1:3);
+        
+        %end
+       %ACTUAL: palm_posM*palm_eulerM*palm_quatM*prox_posM*prox_eulerM*prox_quatM*dist_posM*dist_eulerM*dist_quatM*posM*eulM*quatM*verts;
+       
+       %newVerts = objVerts*quatM;
+       %*eulM*posM*dist_quatM*dist_eulerM*dist_posM*prox_quatM*prox_eulerM*prox_posM*palm_quatM*palm_eulerM*palm_posM;
        axis equal
        patch('Faces',objFaces,'Vertices',newVerts,'FaceColor','red');
+       if j<dist_size, hold on, end
     end
 end
 
@@ -290,21 +379,30 @@ function get_list(meshStruct)
     global euler_list;
     global quat_list;
     global pos_list;
+    global names_list;
     global matrices_int;
     
     palm_idx = 1;
     
-   palm_euler = euler_list(palm_idx);
-   palmEulM = eul2rotm(palm_euler,'XYZ');
+   palm_euler = euler_list(palm_idx,:);
+   palm_eulerM = eul2rotm(palm_euler,'XYZ');
+   palm_eulerM(end+1,4) = 1;
 
-   palm_quat = quat_list(palm_idx);
-   palmQuatM = quat2rotm(palm_quat);
+   palm_quat = quat_list(palm_idx,:);
+   palm_quatM = quat2rotm(palm_quat);
+   palm_quatM(end+1,4) = 1;
 
-   palm_pos = pos_list(palm_pos);
-   palmPosM = makehgtform('translate',palm_pos); 
+   palm_pos = pos_list(palm_idx,:);
+   palm_posM = makehgtform('translate',palm_pos); 
    
+   % For finger 1
+   prox_idx = 8;
+   distal_idx = 12;
    
-   finger_distal_transform(euler_list,quat_list,pos_list,palm_eulerM,palm_quatM,palm_posM,prox_idx,distal_idx,meshStruct);
+   % ** finger_distal_transform would be called for each finger once
+   % working without error ***
+   % Transform finger tip
+   finger_distal_transform(euler_list,quat_list,pos_list,names_list,palm_eulerM,palm_quatM,palm_posM,prox_idx,distal_idx,meshStruct);
 
     % Get the palm transforms
     %palm_list = [];
@@ -313,4 +411,3 @@ function get_list(meshStruct)
     %end
     
 end
-
