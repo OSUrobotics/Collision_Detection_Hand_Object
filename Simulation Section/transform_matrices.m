@@ -11,7 +11,7 @@ function renderFromStructTree()
     num_i = 1;
     
     % Given Mujoco XML file, return struct of major components
-    filename = "j2s7s300_end_effector_v1_btbottle.xml";%sbox.xml";
+    filename = "j2s7s300_end_effector_v1_sbox.xml";
     [handStruct,objStruct,meshStruct] = XMLtoStructSTL(filename);
     allStructs = {handStruct};
     numStructs = size(allStructs);
@@ -282,43 +282,26 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
     scale_palm = [0.005];
     scale_fingers = [0.002];
   
-    link_7_rot = [-1.57 0 -1.57];
-    link_7_pos = [0.0 0.18 0.0654];
+     link_7_rot = [-1.57 0 -1.57];
+     link_7_pos = [0.0 0.18 0.0654];
     
-    palm_cyl_rot = [0 1 0 0]; %quat
+    palm_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
     palm_cyl_pos = [0.0 0.0 -0.11];
     
-    palm1_cyl_rot = [0 1 0 0]; %quat
+    palm1_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
     palm1_cyl_pos = [0.02 0.0 -0.11];
     
-    palm2_cyl_rot = [0 1 0 0]; %quat
+    palm2_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
     palm2_cyl_pos = [-0.02 0.0 -0.11];    
     
-    palm3_cyl_rot = [0 1 0 0]; %quat
+    palm3_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
     palm3_cyl_pos = [0.0 -0.015 -0.11];
     
-    palm4_cyl_rot = [0 1 0 0]; %quat
+    palm4_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
     palm4_cyl_pos = [0.0 0.015 -0.11];
     
-%     link_7_rot = [1.57 0 0];
-%     link_7_pos = [0.0 0.0 0.0];
-%     
-%     palm_cyl_rot = [1.57 0 0]; %quat
-%     palm_cyl_pos = [0.0 0.0 0.0];
-%     
-%     palm1_cyl_rot = [1.57 0 0]; %quat
-%     palm1_cyl_pos = [0.0 0.0 0.0];
-%     
-%     palm2_cyl_rot = [1.57 0 0]; %quat
-%     palm2_cyl_pos = [0.0 0.0 0.0];    
-%     
-%     palm3_cyl_rot = [1.57 0 0]; %quat
-%     palm3_cyl_pos = [0.0 0.0 0.0];
-%     
-%     palm4_cyl_rot = [1.57 0 0]; %quat
-%     palm4_cyl_pos = [0.0 0.0 0.0];
     
-    finger_1_rot = [0.379408 -0.662973 -0.245899 0.596699]; %quat
+    finger_1_rot = [0.379408 -0.662973 -0.245899 0.596699]; %quat0.379408 -0.662973 -0.245899 0.596699
     finger_1_pos = [0.00279 0.03126 -0.11467];
     
     f1_prox_1_rot = [1.57 3.14 1.57];
@@ -472,10 +455,12 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
     
     if(num_i==1)
         M = link_7_rot*link_7_pos; 
+%         M = link_7_pos*link_7_rot
         
     elseif (num_i==2)
 %         M = scale_palm*palm_cyl_rot*palm_cyl_pos*link_7_rot*link_7_pos;
         M = link_7_rot*link_7_pos*scale_palm*palm_cyl_rot*palm_cyl_pos;
+%         M = link_7_pos*link_7_rot*scale_palm*palm_cyl_rot*palm_cyl_pos;
         
      elseif (num_i==3)
 %          M = scale_palm*palm1_cyl_rot*palm1_cyl_pos*link_7_rot*link_7_pos;
