@@ -260,8 +260,19 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
     finger_3_pos = makehgtform('translate',finger_3_pos);
     link_7_pos = makehgtform('translate',link_7_pos);
     
-    if(num_i==1)
-        M = link_7_rot*link_7_pos;
+    %if(num_i==1)
+       % M = link_7_rot*link_7_pos;
+       % disp("Vertices are:");
+       % verts = objVerts;
+       % verts(:,4)  = 1;
+       % verts = verts';
+        %disp(verts);
+       % verts = M*verts;
+       % verts = verts';
+       % disp(size(verts));
+       % objVerts = verts(:, 1:3);    
+    if (num_i==13)
+        M = finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
         disp("Vertices are:");
         verts = objVerts;
         verts(:,4)  = 1;
@@ -270,7 +281,8 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
         verts = M*verts;
         verts = verts';
         disp(size(verts));
-        objVerts = verts(:, 1:3);    
+        objVerts = verts(:, 1:3);
+    
     elseif (num_i==14)
         M = f3_prox_cyl_rot*f3_prox_cyl_pos*finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
         disp("Vertices are:");
