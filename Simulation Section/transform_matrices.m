@@ -183,8 +183,13 @@ function partTransform(currStruct, meshStruct)
     end
 
     % Uncomment to render model of full component part
+    
+    %plot3([0,0.1], [0,0],[0,0], '-r');
     axis equal
+    hold on;
+    plot3([0,0], [0,0.1],[0,0], '-g', [0,0.1], [0,0],[0,0], '-r', [0,0], [0,0],[0,0.1], '-c');
     patch('Faces',partFaces,'Vertices',partVerts,'FaceColor','red');
+   
 end
 
 function append_to_list(currStruct)
@@ -270,38 +275,32 @@ function get_list()
 end
 
 function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
-    %disp(currStruct.Attributes);
-
-    %M = 0
-    %palm_mesh_rot = [];  %quat
-    %palm_mesh_pos = [];
-    
     cam_rot = [0 90 0 0]; %quat
     cam_pos = [0 -0.1 0.1];
     
     scale_palm = [0.005];
     scale_fingers = [0.002];
   
-     link_7_rot = [-1.57 0 -1.57];
-     link_7_pos = [0.0 0.18 0.0654];
+    link_7_rot = [-1.57 0 -1.57];
+    link_7_pos = [0.0 0.18 0.0654];
     
-    palm_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
+    palm_cyl_rot = [0 1 0 0]; %quat
     palm_cyl_pos = [0.0 0.0 -0.11];
     
-    palm1_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
+    palm1_cyl_rot = [0 1 0 0]; %quat
     palm1_cyl_pos = [0.02 0.0 -0.11];
     
-    palm2_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
+    palm2_cyl_rot = [0 1 0 0]; %quat
     palm2_cyl_pos = [-0.02 0.0 -0.11];    
     
-    palm3_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
+    palm3_cyl_rot = [0 1 0 0]; %quat
     palm3_cyl_pos = [0.0 -0.015 -0.11];
     
-    palm4_cyl_rot = [0 1 0 0]; %quat[0 1 0 0];
+    palm4_cyl_rot = [0 1 0 0]; %quat
     palm4_cyl_pos = [0.0 0.015 -0.11];
     
     
-    finger_1_rot = [0.379408 -0.662973 -0.245899 0.596699]; %quat0.379408 -0.662973 -0.245899 0.596699
+    finger_1_rot = [0.379408 -0.662973 -0.245899 0.596699]; %quat
     finger_1_pos = [0.00279 0.03126 -0.11467];
     
     f1_prox_1_rot = [1.57 3.14 1.57];
@@ -454,121 +453,86 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
     f3_dist_cyl_pos = makehgtform('translate',f3_dist_cyl_pos);
     
     if(num_i==1)
-        M = link_7_rot*link_7_pos; 
-%         M = link_7_pos*link_7_rot
+        M = link_7_pos*link_7_rot
         
     elseif (num_i==2)
-%         M = scale_palm*palm_cyl_rot*palm_cyl_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*scale_palm*palm_cyl_rot*palm_cyl_pos;
-%         M = link_7_pos*link_7_rot*scale_palm*palm_cyl_rot*palm_cyl_pos;
-        
+        M = link_7_pos*link_7_rot*palm_cyl_pos*palm_cyl_rot*scale_palm;
+         
      elseif (num_i==3)
-%          M = scale_palm*palm1_cyl_rot*palm1_cyl_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*scale_palm*palm1_cyl_rot*palm1_cyl_pos;
-        
+        M = link_7_pos*link_7_rot*palm1_cyl_pos*palm1_cyl_rot*scale_palm;
+       
     elseif (num_i==4)
-%         M = scale_palm*palm2_cyl_rot*palm2_cyl_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*scale_palm*palm2_cyl_rot*palm2_cyl_pos;
-        
+        M = link_7_pos*link_7_rot*palm2_cyl_pos*palm2_cyl_rot*scale_palm;
+         
     elseif (num_i==5)
-%         M = scale_palm*palm3_cyl_rot*palm3_cyl_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*scale_palm*palm3_cyl_rot*palm3_cyl_pos;
-        
+        M = link_7_pos*link_7_rot*palm3_cyl_pos*palm3_cyl_rot*scale_palm;
+         
     elseif (num_i==6)
-%         M = scale_palm*palm4_cyl_rot*palm4_cyl_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*scale_palm*palm4_cyl_rot*palm4_cyl_pos;
+        M = link_7_pos*link_7_rot*palm4_cyl_pos*palm4_cyl_rot*scale_palm;
     
     elseif (num_i==7)
-%         M = finger_1_rot*finger_1_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_1_rot*finger_1_pos;%
+        M = link_7_pos*link_7_rot*finger_1_pos*finger_1_rot;
          
     elseif (num_i==8)
-%         M = scale_fingers*f1_prox_cyl_rot*f1_prox_cyl_pos*finger_1_rot*finger_1_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_1_pos*scale_fingers*f1_prox_cyl_rot*f1_prox_cyl_pos;%
-         
+        M = link_7_pos*link_7_rot*finger_1_pos*finger_1_rot*f1_prox_cyl_pos*f1_prox_cyl_rot*scale_fingers;%
+          
      elseif (num_i==9)
-%         M = scale_fingers*f1_prox_1_rot*f1_prox_1_pos*finger_1_rot*finger_1_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_1_rot*finger_1_pos*scale_fingers*f1_prox_1_rot*f1_prox_1_pos;%
+        M = link_7_pos*link_7_rot*finger_1_pos*finger_1_rot*f1_prox_1_pos*f1_prox_1_rot*scale_fingers;%
  
      elseif (num_i==10)        
-%         M = finger_tip_1*finger_1_rot*finger_1_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_1_rot*finger_1_pos*finger_tip_1;%
+        M = link_7_pos*link_7_rot*finger_1_pos*finger_1_rot*finger_tip_1;%
      
      elseif (num_i==11)        
-%         M = scale_fingers*f1_dist_cyl_rot*f1_dist_cyl_pos*finger_tip_1*finger_1_rot*finger_1_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_1_rot*finger_1_pos*finger_tip_1*scale_fingers*f1_dist_cyl_rot*f1_dist_cyl_pos;%
-     
+        M = link_7_pos*link_7_rot*finger_1_pos*finger_1_rot*finger_tip_1*f1_dist_cyl_pos*f1_dist_cyl_rot*scale_fingers;%
+      
      elseif (num_i==12)
-%         M = scale_fingers*f1_dist_1_rot*f1_dist_1_pos*finger_tip_1*finger_1_rot*finger_1_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_tip_1*scale_fingers*f1_dist_1_rot*f1_dist_1_pos;%
+        M = link_7_pos*link_7_rot*finger_1_pos*finger_1_rot*finger_tip_1*f1_dist_1_pos*f1_dist_1_rot*scale_fingers;%
          
-    elseif (num_i==13)
-%         M = finger_2_rot*finger_2_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_2_rot*finger_2_pos;
+     elseif (num_i==13)
+         M = link_7_pos*link_7_rot*finger_2_pos*finger_2_rot;
         
-    elseif (num_i==14)
-%         M = scale_fingers*f2_prox_cyl_rot*f2_prox_cyl_pos*finger_2_rot*finger_2_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_2_rot*finger_2_pos*scale_fingers*f2_prox_cyl_rot*f2_prox_cyl_pos;
-        
-    elseif (num_i==15)
-%         M = scale_fingers*f2_prox_1_rot*f2_prox_1_pos*finger_2_rot*finger_2_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_2_rot*finger_2_pos*scale_fingers*f2_prox_1_rot*f2_prox_1_pos;
-
+     elseif (num_i==14)
+         M = link_7_pos*link_7_rot*finger_2_pos*finger_2_rot*f2_prox_cyl_pos*f2_prox_cyl_rot*scale_fingers;
+         
+     elseif (num_i==15)
+         M = link_7_pos*link_7_rot*finger_2_pos*finger_2_rot*f2_prox_1_pos*f2_prox_1_rot*scale_fingers;
+ 
     elseif (num_i==16)        
-%         M = finger_tip_2*finger_2_rot*finger_2_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_2_rot*finger_2_pos*finger_tip_2;
-    
+        M = link_7_pos*link_7_rot*finger_2_pos*finger_2_rot*finger_tip_2;
+     
     elseif (num_i==17)        
-%         M = scale_fingers*f2_dist_cyl_rot*f2_dist_cyl_pos*finger_tip_2*finger_2_rot*finger_2_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_2_rot*finger_2_pos*finger_tip_2*scale_fingers*f2_dist_cyl_rot*f2_dist_cyl_pos;
-    
+         M = link_7_pos*link_7_rot*finger_2_pos*finger_2_rot*finger_tip_2*f2_dist_cyl_pos*f2_dist_cyl_rot*scale_fingers;
+     
     elseif (num_i==18)
-%         M = scale_fingers*f2_dist_1_rot*f2_dist_1_pos*finger_tip_2*finger_2_rot*finger_2_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_2_rot*finger_2_pos*finger_tip_2*scale_fingers*f2_dist_1_rot*f2_dist_1_pos;
-        
+         M = link_7_pos*link_7_rot*finger_2_pos*finger_2_rot*finger_tip_2*f2_dist_1_pos*f2_dist_1_rot*scale_fingers;
+         
     elseif (num_i==19)
-%         M = finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_3_rot*finger_3_pos;
-    
+        M = link_7_pos*link_7_rot*finger_3_pos*finger_3_rot;
+     
     elseif (num_i==20)
-%         M = scale_fingers*f3_prox_cyl_rot*f3_prox_cyl_pos*finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_3_rot*finger_3_pos*scale_fingers*f3_prox_cyl_rot*f3_prox_cyl_pos;
-    
+        M = link_7_pos*link_7_rot*finger_3_pos*finger_3_rot*f3_prox_cyl_pos*f3_prox_cyl_rot*scale_fingers;
+     
     elseif (num_i==21)
-%         M = scale_fingers*f3_prox_1_rot*f3_prox_1_pos*finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_3_rot*finger_3_pos*f3_prox_1_rot*f3_prox_1_pos*scale_fingers;
-    
+        M = link_7_pos*link_7_rot*finger_3_pos*finger_3_rot*f3_prox_1_pos*f3_prox_1_rot*scale_fingers;
+     
     elseif (num_i==22)        
-%         M = finger_tip_3*finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_3_rot*finger_3_pos*finger_tip_3;
-    
+        M = link_7_pos*link_7_rot*finger_3_pos*finger_3_rot*finger_tip_3;
+     
     elseif (num_i==23)        
-%         M = scale_fingers*f3_dist_cyl_rot*f3_dist_cyl_pos*finger_tip_3*finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_3_rot*finger_3_pos*finger_tip_3*scale_fingers*f3_dist_cyl_rot*f3_dist_cyl_pos;
-    
+        M = link_7_pos*link_7_rot*finger_3_pos*finger_3_rot*finger_tip_3*f3_dist_cyl_pos*f3_dist_cyl_rot*scale_fingers;
+        
     elseif (num_i==24)
-%         M = scale_fingers*f3_dist_1_rot*f3_dist_1_pos*finger_tip_3*finger_3_rot*finger_3_pos*link_7_rot*link_7_pos;
-        M = link_7_rot*link_7_pos*finger_3_rot*finger_3_pos*finger_tip_3*scale_fingers*f3_dist_1_rot*f3_dist_1_pos;
-       
+        M = link_7_pos*link_7_rot*finger_3_pos*finger_3_rot*finger_tip_3*f3_dist_1_pos*f3_dist_1_rot*scale_fingers;
+        
     else
-        M(4,4) = 0;
+        M = eye(4);
     end
-    
-    
-    
-    %disp("Vertices are:");
+
     verts = objVerts;
     verts(:,4)  = 1;
     verts = verts';
-    %disp(verts);
-    verts = M*verts;% cam_rot*cam_pos*
+    verts = M*verts;
     verts = verts';
-    %disp(size(verts));
     objVerts = verts(:, 1:3);
-    %disp(objVerts);
-    
-    %axis equal
-    %patch('Faces',objFaces,'Vertices',objVerts,'FaceColor','red');
-    
 end
 
