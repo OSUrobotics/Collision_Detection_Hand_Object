@@ -1,5 +1,6 @@
 function getValidInitCoords()
-    shapeFiles = ["shape_meshes/CubeS.stl"]; %,"CubeM.stl","CubeB.stl","CylinderS.stl","CylinderM.stl","CylinderB.stl"];
+
+    shapeFiles = ["shape_meshes/CubeS.stl", "shape_meshes/CubeM.stl","shape_meshes/CubeB.stl","shape_meshes/CylinderS.stl","shape_meshes/CylinderM.stl","shape_meshes/CylinderB.stl"];
     objSurfAreas = [147.852005, 200.401337, 260.403015, 16694.800781, 23090.662109, 30490.078125];
     %poissonFiles = ["CubeS.stl","CubeM.stl","CubeB.stl","CylinderS.stl","CylinderM.stl","CylinderB.stl"];
     
@@ -14,14 +15,15 @@ function getValidInitCoords()
     yMax = 0.07;
     
     % Number of initial starting position coordinates
-    numCoords = 1;
+    numCoords = 50;
     
     for i = 1:length(shapeFiles)
        disp(shapeFiles(i));
        xCoords = xMin + (xMax-xMin).*rand(numCoords,1);
        yCoords = yMin + (yMax-yMin).*rand(numCoords,1);
        zCoords = zeros(numCoords); % CHANGE THIS --> half size of object height
-       
+       %disp("xCoordsare");
+       %disp(xCoords);
        % Get the stl file, object poisson points, surface area
        [objVerts, objFaces, objNormals, objName] = stlRead(shapeFiles(i));
        poissonFilename = erase(shapeFiles(i),".stl") + "_poisson.ply";
@@ -30,7 +32,10 @@ function getValidInitCoords()
  
        % Used for displaying the points
        ptCloud = pointCloud(objectSurfPoints)
-       
+       filename = "Coords"+i+".txt";
+       if exist(filename, 'file') == 2
+        delete(filename);
+       end        
        % numCoords --> number of starting positions to generate for each
        % shape
        for j = 1:numCoords
@@ -59,9 +64,14 @@ function getValidInitCoords()
            ptCloudtransformed = pointCloud(objectSurfPoints)
            pcwrite(ptCloudtransformed,'object3dtrans.pcd','Encoding','ascii');
            pct = pcread('object3dtrans.pcd');
-           pcshowpair(pc,pct);
+           %pcshowpair(pc,pct);
            
            % Add: accept or reject point
+           if (amountCollide == 0)
+                fid = fopen(filename,'at');
+                fprintf(fid, '%f %f %f\n', xCoords(j), yCoords(j), zCoords(j));
+                fclose(fid);               
+           end
        end
     end
     

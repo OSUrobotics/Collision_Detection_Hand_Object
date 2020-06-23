@@ -9,11 +9,18 @@ function renderFromStructTree()
     matrices_list = [];
     matrices_int = 1;
     num_i = 1;
-    global Faces;
+%     global Faces;
     Faces = [];
-    global Verts;
+%     global Verts;
     Verts = [];
-    
+    filename = "hello_VERTS.txt"
+    filename2 = "hello_FACES.txt"
+    if exist(filename, 'file') == 2
+     delete(filename);
+    end
+    if exist(filename2, 'file') == 2
+     delete(filename2);
+    end    
     % Given Mujoco XML file, return struct of major components
     filename = "j2s7s300_end_effector_v1_sbox.xml";
     [handStruct,objStruct,meshStruct] = XMLtoStructSTL(filename);
@@ -29,34 +36,37 @@ function renderFromStructTree()
         %disp("MAIN currStruct.Attributes.name: ");
         %disp(currStruct.Attributes.name);
         
-        partTransform(currStruct, meshStruct);
+        [Verts, Faces] = partTransform(currStruct, meshStruct, Verts, Faces);
         
         % If current struct has inner body, transform inner sections
         if isfield(currStruct,'body') == 1
             isLeaf = 0;
             %disp("HAS BODY: currStruct.Attributes.name: ");
             %disp(currStruct.Attributes.name);
-            innerTransform(currStruct, meshStruct, isLeaf);
+            [Verts, Faces] = innerTransform(currStruct, meshStruct, isLeaf, Verts, Faces);
         else
             isLeaf = 1;
         end
     end
     
-    disp("SIZES FACES\n");
-    disp(size(Faces));
-    disp("SIZES VERTICES\n");
-    disp(size(Verts)); 
-    %fv = cat(1, partFaces, partVerts);
-    stlwrite("./new_hand_full.stl",Faces, Verts);%/Users/asar/Desktop/Grimm's\ Lab/Grasping/Codes/CollisionDetection/Simulation\ Section
-    %disp("matrices_int: "+ matrices_int);
-    [handVerts, handFaces, handNormals, handName] = stlRead("new_hand_full.stl");%"finger_distal.STL"
-    disp("SIZES FACESREAD\n");
-    disp(size(handFaces));
-    disp("SIZES VERTICESREAD\n");
-    disp(size(handVerts));
+    save_mesh();
     
-    axis equal
-    patch('Faces',Faces,'Vertices',Verts,'FaceColor','red');
+%     disp("SIZES FACES\n");
+%     disp(size(Faces));
+%     disp("SIZES VERTICES\n");
+%     disp(size(Verts)); 
+    %fv = cat(1, partFaces, partVerts);
+%     stlwrite("./new_hand_full.stl",Faces, Verts,'mode','ascii');%/Users/asar/Desktop/Grimm's\ Lab/Grasping/Codes/CollisionDetection/Simulation\ Section
+    %disp("matrices_int: "+ matrices_int);
+%     [handVerts, handFaces, handNormals, handName] = stlRead("new_hand_full.stl");%"finger_distal.STL"
+%     disp("SIZES FACESREAD\n");
+%     disp(size(handFaces));
+%     disp("SIZES VERTICESREAD\n");
+%     disp(size(handVerts));
+%     
+%     axis equal
+%     patch('Faces',Faces,'Vertices',Verts,'FaceColor','red');
+
 end
 
 % Return correct mesh filename from mesh struct
@@ -96,7 +106,7 @@ function [meshFile] = getMesh(currPart,meshStruct,numMeshes,shapesFile,handFile)
     end
 end
 
-function innerTransform(currStruct, meshStruct, isLeaf)
+function [Verts, Faces] = innerTransform(currStruct, meshStruct, isLeaf, Verts, Faces)
     b = 0;
     numBodies = size(currStruct.body);
     numBodies = numBodies(2);
@@ -111,19 +121,19 @@ function innerTransform(currStruct, meshStruct, isLeaf)
 
         %disp("INNER bodyStruct.Attributes.name: ");
         %disp(bodyStruct.Attributes.name);
-        partTransform(bodyStruct, meshStruct);
+        [Verts, Faces] = partTransform(bodyStruct, meshStruct, Verts, Faces);
         
         % Traverse and transform inner parts until leaf node
         if isfield(bodyStruct,'body') == 1
             isLeaf = 0;
-            innerTransform(bodyStruct, meshStruct, isLeaf);
+            [Verts, Faces] = innerTransform(bodyStruct, meshStruct, isLeaf, Verts, Faces);
         else
            isLeaf = 1; 
         end
     end
 end
 
-function partTransform(currStruct, meshStruct)
+function [Verts, Faces] = partTransform(currStruct, meshStruct, Verts, Faces)
     numMeshes = size(meshStruct);
     numMeshes = numMeshes(2);
     meshFile = '';
@@ -194,20 +204,18 @@ function partTransform(currStruct, meshStruct)
         %disp(num_i);
         objVerts = try_transform(currStruct, objVerts, objFaces, num_i);
         num_i = num_i + 1;
-        
         partVerts = cat(1, partVerts, objVerts);
         partFaces = cat(1, partFaces, objFaces);
         %disp("size of finalVerts: "+size(partVerts));
+        fid = fopen('hello_VERTS.txt','at');
+        fprintf(fid, '%f %f %f\n', partVerts);
+        fclose(fid);
+    
+        fid = fopen('hello_FACES.txt','at');
+        fprintf(fid, '%f %f %f\n', partFaces);
+        fclose(fid);
         
     end
-
-    % Uncomment to render model of full component part
-    
-    %plot3([0,0.1], [0,0],[0,0], '-r');
-    %axis equal
-    %hold on;
-    %plot3([0,0], [0,0.1],[0,0], '-g', [0,0.1], [0,0],[0,0], '-r', [0,0], [0,0],[0,0.1], '-c');
-    %patch('Faces',partFaces,'Vertices',partVerts,'FaceColor','red');
     
    
 end
@@ -561,7 +569,29 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
     %disp("ADDING");
     %disp(currStruct.Attributes.name);
     
-    Verts = cat(1, Verts, objVerts);
-    Faces = cat(1, Faces, objFaces);
+%     Verts = [Verts; verts(:, 1:3)];
+%     Faces = [Faces; objFaces];
 end
 
+function save_mesh()
+    filename = "hello_VERTS.txt";
+    fileID = fopen(filename);
+    verts_in = textscan(fileID,'%f %f %f');
+    Verts = [verts_in{1}, verts_in{2}, verts_in{3}];
+    fclose(fileID);
+    
+    filename = "hello_FACES.txt";
+    fileID = fopen(filename);
+    faces_in = textscan(fileID,'%f %f %f');
+    Faces = [faces_in{1}, faces_in{2}, faces_in{3}];
+    fclose(fileID);
+    
+    disp(size(Verts));
+    disp(size(Faces));
+    
+    axis equal
+    hold on;
+     plot3([0,0], [0,0.1],[0,0], '-g', [0,0.1], [0,0],[0,0], '-r', [0,0], [0,0],[0,0.1], '-c');
+    patch('Faces',Faces,'Vertices',Verts,'FaceColor','red');    
+    
+end

@@ -13,9 +13,11 @@ function [ amountCollide ] = getCollisionFromSTL(objVerts, objFaces, objectSurfP
     %objectSurfPoints = read_ply(poissonFilename);
     %objectSurfaceArea = objSurfArea;
     
-    [handVerts, handFaces, handNormals, handName] = stlRead("finger_distal.STL");
+    [handVerts, handFaces, handNormals, handName] = stlRead("new_hand_full.stl");%"finger_distal.STL"
+%     axis equal
+%     patch('Faces',handFaces,'Vertices',handVerts,'FaceColor','red');
     handVox = getVoxelValues( handVerts,handFaces, resolution ); 
-    
+
     % Default setting for getCollisionVoxelVoxel
     method = 'cubic';
     amountCollide = getCollisionVoxelVoxel( handVox, objectSurfPoints, objectSurfaceArea, resolution, method )%objectVox, 
