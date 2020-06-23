@@ -57,13 +57,13 @@ function getValidInitCoords()
            %disp("objectSurfPoints: ");
            %disp(objectSurfPoints);
            
-           pcwrite(ptCloud,'object3d.pcd','Encoding','ascii');
-           pc = pcread('object3d.pcd');
+%            pcwrite(ptCloud,'object3d.pcd','Encoding','ascii');
+%            pc = pcread('object3d.pcd');
            %pcshow(pc);
            
-           ptCloudtransformed = pointCloud(objectSurfPoints)
-           pcwrite(ptCloudtransformed,'object3dtrans.pcd','Encoding','ascii');
-           pct = pcread('object3dtrans.pcd');
+%            ptCloudtransformed = pointCloud(objectSurfPoints)
+%            pcwrite(ptCloudtransformed,'object3dtrans.pcd','Encoding','ascii');
+%            pct = pcread('object3dtrans.pcd');
            %pcshowpair(pc,pct);
            
            % Add: accept or reject point
