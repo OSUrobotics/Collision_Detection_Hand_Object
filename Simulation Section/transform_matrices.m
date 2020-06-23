@@ -9,6 +9,10 @@ function renderFromStructTree()
     matrices_list = [];
     matrices_int = 1;
     num_i = 1;
+    global Faces;
+    Faces = [];
+    global Verts;
+    Verts = [];
     
     % Given Mujoco XML file, return struct of major components
     filename = "j2s7s300_end_effector_v1_sbox.xml";
@@ -38,7 +42,21 @@ function renderFromStructTree()
         end
     end
     
+    disp("SIZES FACES\n");
+    disp(size(Faces));
+    disp("SIZES VERTICES\n");
+    disp(size(Verts)); 
+    %fv = cat(1, partFaces, partVerts);
+    stlwrite("./new_hand_full.stl",Faces, Verts);%/Users/asar/Desktop/Grimm's\ Lab/Grasping/Codes/CollisionDetection/Simulation\ Section
     %disp("matrices_int: "+ matrices_int);
+    [handVerts, handFaces, handNormals, handName] = stlRead("new_hand_full.stl");%"finger_distal.STL"
+    disp("SIZES FACESREAD\n");
+    disp(size(handFaces));
+    disp("SIZES VERTICESREAD\n");
+    disp(size(handVerts));
+    
+    axis equal
+    patch('Faces',Faces,'Vertices',Verts,'FaceColor','red');
 end
 
 % Return correct mesh filename from mesh struct
@@ -98,7 +116,7 @@ function innerTransform(currStruct, meshStruct, isLeaf)
         % Traverse and transform inner parts until leaf node
         if isfield(bodyStruct,'body') == 1
             isLeaf = 0;
-            innerTransform(bodyStruct, meshStruct, isLeaf)
+            innerTransform(bodyStruct, meshStruct, isLeaf);
         else
            isLeaf = 1; 
         end
@@ -115,6 +133,7 @@ function partTransform(currStruct, meshStruct)
     siteNum = 1;
     currPart = 0;
     global num_i;
+
     
     % Append the outter body transformation
     append_to_list(currStruct);
@@ -162,8 +181,8 @@ function partTransform(currStruct, meshStruct)
             end
         end
         
-        disp("PART currpart.Attributes.name: ");
-        disp(currPart.Attributes.name + "," + num_i);
+        %disp("PART currpart.Attributes.name: ");
+        %disp(currPart.Attributes.name + "," + num_i);
         append_to_list(currPart);
 
         % Return correct mesh filename
@@ -185,10 +204,11 @@ function partTransform(currStruct, meshStruct)
     % Uncomment to render model of full component part
     
     %plot3([0,0.1], [0,0],[0,0], '-r');
-    axis equal
-    hold on;
-    plot3([0,0], [0,0.1],[0,0], '-g', [0,0.1], [0,0],[0,0], '-r', [0,0], [0,0],[0,0.1], '-c');
-    patch('Faces',partFaces,'Vertices',partVerts,'FaceColor','red');
+    %axis equal
+    %hold on;
+    %plot3([0,0], [0,0.1],[0,0], '-g', [0,0.1], [0,0],[0,0], '-r', [0,0], [0,0],[0,0.1], '-c');
+    %patch('Faces',partFaces,'Vertices',partVerts,'FaceColor','red');
+    
    
 end
 
@@ -275,6 +295,9 @@ function get_list()
 end
 
 function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
+    global Faces;
+    global Verts;
+
     cam_rot = [0 90 0 0]; %quat
     cam_pos = [0 -0.1 0.1];
     
@@ -453,7 +476,7 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
     f3_dist_cyl_pos = makehgtform('translate',f3_dist_cyl_pos);
     
     if(num_i==1)
-        M = link_7_pos*link_7_rot
+        M = link_7_pos*link_7_rot;
         
     elseif (num_i==2)
         M = link_7_pos*link_7_rot*palm_cyl_pos*palm_cyl_rot*scale_palm;
@@ -534,5 +557,11 @@ function [objVerts] = try_transform(currStruct, objVerts, objFaces, num_i)
     verts = M*verts;
     verts = verts';
     objVerts = verts(:, 1:3);
+    
+    %disp("ADDING");
+    %disp(currStruct.Attributes.name);
+    
+    Verts = cat(1, Verts, objVerts);
+    Faces = cat(1, Faces, objFaces);
 end
 
